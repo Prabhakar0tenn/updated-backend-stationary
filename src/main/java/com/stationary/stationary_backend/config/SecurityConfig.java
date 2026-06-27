@@ -227,8 +227,8 @@ public class SecurityConfig {
         config.setAllowedOriginPatterns(patterns);
         
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
-        config.setExposedHeaders(List.of("Authorization")); // headers frontend can read
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "X-Session-Id"));
+        config.setExposedHeaders(List.of("Authorization", "X-Session-Id")); // headers frontend can read
         config.setAllowCredentials(true);  // required for Authorization header to work
         config.setMaxAge(3600L);           // cache preflight response for 1 hour
 
