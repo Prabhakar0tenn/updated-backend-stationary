@@ -1,0 +1,99 @@
+# ════════════════════════════════════════════════════════
+# application.yml — Environment-aware configuration
+#
+# WHY YAML over .properties?
+# YAML supports nesting and is far more readable for
+# hierarchical config (spring.data.mongodb.uri looks
+# cleaner as nested keys than dotted properties).
+#
+# RULE: NEVER hardcode secrets here. Always use ${ENV_VAR}.
+# This file is committed to Git. Secrets are not.
+#
+# HOW env vars work locally:
+#   Set them in your IDE's Run Configuration
+#   (IntelliJ: Run > Edit Configurations > Environment Variables)
+#   OR export them in your terminal before running.
+# ════════════════════════════════════════════════════════
+
+spring:
+  application:
+    name: stationary-backend
+
+  # ── Data sources — MongoDB + Redis UNDER ONE spring.data block ──────────
+  # IMPORTANT FRESHER TRAP: YAML does NOT allow duplicate keys at the same level.
+  # If you write two separate "data:" blocks under "spring:", the second one
+  # silently overwrites the first (or causes a DuplicateKeyException in strict mode).
+  # Always merge MongoDB and Redis under ONE "spring.data:" block.
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/stationary_db}
+      #     ↑ ${VAR:default} means: use env var if set, else use default
+      #     The default lets you run locally WITHOUT setting env vars
+
+    redis:
+      url: ${REDIS_URL:redis://localhost:6379}
+      lettuce:
+        pool:
+          max-active: 10   # max connections in pool
+          max-idle: 5      # max idle connections kept alive
+          min-idle: 1      # min idle connections to keep warm
+          max-wait: -1ms   # -1 = wait forever for a connection
+
+  # ── File Upload ────────────────────────────────────────
+  # WHY set this? Spring's default max is 1MB.
+  # Product images can be 3-4MB before Cloudinary compresses them.
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# ── JWT Configuration ────────────────────────────────────
+# Secret must be ≥ 256 bits (32 chars) for HS256.
+# REMINDER: Set a strong JWT_SECRET in Render env vars before production.
+jwt:
+  secret: ${JWT_SECRET:local-dev-secret-min-32-chars-long!!}
+  access-token-expiry-ms: ${JWT_ACCESS_EXPIRY_MS:900000}      # 15 minutes
+  refresh-token-expiry-ms: ${JWT_REFRESH_EXPIRY_MS:604800000} # 7 days
+
+# ── Cloudinary Configuration ──────────────────────────────
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:your-cloud-name}
+  api-key: ${CLOUDINARY_API_KEY:your-api-key}
+  api-secret: ${CLOUDINARY_API_SECRET:your-api-secret}
+
+# ── Admin Seed ────────────────────────────────────────────
+# ApplicationRunner reads these at startup and BCrypts the password.
+# Idempotent: only creates admin if none exists yet.
+# REMINDER: Set ADMIN_PASSWORD to a strong value in production.
+admin:
+  seed:
+    username: ${ADMIN_USERNAME:admin}
+    password: ${ADMIN_PASSWORD:changeme123}
+    email: ${ADMIN_EMAIL:admin@stationary.com}
+
+# ── App CORS ─────────────────────────────────────────────
+# Add your Vercel URL to CORS_ALLOWED_ORIGINS when deploying.
+# Local dev: http://localhost:5173 (Vite) or http://localhost:3000 (CRA)
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
+
+# ── Logging ──────────────────────────────────────────────
+# Tighten to WARN/ERROR before Render deploy (less noise in prod logs).
+logging:
+  level:
+    root: INFO
+    com.stationary: DEBUG
+    org.springframework.security: INFO
+    org.springframework.data.mongodb: INFO
+
+# ── Actuator for Render Health Checks ──────────────────────
+management:
+  endpoints:
+    web:
+      base-path: /api/v1/actuator
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never

@@ -1,0 +1,44 @@
+services:
+  - type: web
+    name: stationary-backend
+    plan: free
+    region: singapore
+
+    buildCommand: "./mvnw clean package -DskipTests"
+    startCommand: "java -jar target/stationary-backend-0.0.1-SNAPSHOT.jar"
+
+    healthCheckPath: /api/v1/actuator/health
+
+    envVars:
+      - key: MONGODB_URI
+        sync: false
+
+      - key: REDIS_URL
+        sync: false
+
+      - key: JWT_SECRET
+        sync: false
+
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+
+      - key: CLOUDINARY_API_KEY
+        sync: false
+
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+
+      - key: ADMIN_USERNAME
+        sync: false
+
+      - key: ADMIN_PASSWORD
+        sync: false
+
+      - key: ADMIN_EMAIL
+        sync: false
+
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+
+      - key: JAVA_OPTS
+        value: "-Xmx400m -Xms200m"

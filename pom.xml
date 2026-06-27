@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>3.5.0</version>
+		<relativePath/>
+	</parent>
+
+	<groupId>com.stationary</groupId>
+	<artifactId>stationary-backend</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>stationary-backend</name>
+	<description>Production-grade stationery e-commerce backend</description>
+
+	<properties>
+		<java.version>21</java.version>
+		<mapstruct.version>1.5.5.Final</mapstruct.version>
+		<lombok.version>1.18.32</lombok.version>
+		<jjwt.version>0.12.6</jjwt.version>
+	</properties>
+
+	<dependencies>
+
+		<!-- ════════════════════════════════════════════
+		     CORE WEB + MONGODB
+		     WHY: Spring Web gives us REST controllers.
+		          MongoDB starter auto-configures MongoTemplate
+		          and MongoRepository from application.yml URI.
+		     ════════════════════════════════════════════ -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-mongodb</artifactId>
+		</dependency>
+
+		<!-- ════════════════════════════════════════════
+		     SECURITY
+		     WHY: spring-boot-starter-security adds the
+		          filter chain that intercepts EVERY request.
+		          Without this, ALL endpoints are public —
+		          even your admin product-delete endpoint.
+		     FUTURE: When CUSTOMER role arrives in v2,
+		          you only add new rules here. Nothing else changes.
+		     ════════════════════════════════════════════ -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+
+		<!-- ════════════════════════════════════════════
+		     JWT (JSON Web Tokens) — JJWT library
+		     WHY: jjwt-api is the interface (what you code against).
+		          jjwt-impl is the actual implementation (runtime only).
+		          jjwt-jackson handles JSON serialization of claims.
+		     TRADEOFF: JJWT 0.12.x uses the modern fluent builder API.
+		          Never use 0.9.x tutorials — they use deprecated methods.
+		     ════════════════════════════════════════════ -->
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-api</artifactId>
+			<version>${jjwt.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-impl</artifactId>
+			<version>${jjwt.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-jackson</artifactId>
+			<version>${jjwt.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+
+		<!-- ════════════════════════════════════════════
+		     REDIS
+		     WHY: spring-boot-starter-data-redis gives
+		          RedisTemplate + Spring Cache abstraction.
+		          Lettuce is the default client (async, thread-safe).
+		          commons-pool2 enables connection pooling —
+		          without it you get a new connection per request.
+		     ════════════════════════════════════════════ -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-redis</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-pool2</artifactId>
+		</dependency>
+
+		<!-- ════════════════════════════════════════════
+		     CLOUDINARY
+		     WHY: Official Cloudinary SDK for Java.
+		          Handles multipart upload, transformation URLs,
+		          and deletion by publicId.
+		          The http5 variant uses Apache HttpClient 5.
+		     ════════════════════════════════════════════ -->
+		<dependency>
+			<groupId>com.cloudinary</groupId>
+			<artifactId>cloudinary-http5</artifactId>
+			<version>2.0.0</version>
+		</dependency>
+
+		<!-- ════════════════════════════════════════════
+		     VALIDATION
+		     WHY: @NotBlank, @Min, @Size annotations on DTOs.
+		          Without this dependency, those annotations
+		          exist but DO NOTHING — a common fresher trap.
+		          Spring Boot 3.x does NOT include this by default.
+		     ════════════════════════════════════════════ -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+
+		<!-- ════════════════════════════════════════════
+		     LOMBOK
+		     WHY: Generates boilerplate — getters, setters,
+		          constructors, builders at compile time.
+		          optional=true means it's NOT included in
+		          the final JAR (it's only a code generator).
+		     ════════════════════════════════════════════ -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>${lombok.version}</version>
+			<optional>true</optional>
+		</dependency>
+
+		<!-- ════════════════════════════════════════════
+		     MAPSTRUCT
+		     WHY: Generates type-safe mapping code between
+		          Entity ↔ DTO at compile time (zero reflection).
+		          Faster than ModelMapper which uses reflection at runtime.
+		     IMPORTANT: Both mapstruct AND mapstruct-processor
+		          must be listed. The processor generates the
+		          implementation class during compilation.
+		     ════════════════════════════════════════════ -->
+		<dependency>
+			<groupId>org.mapstruct</groupId>
+			<artifactId>mapstruct</artifactId>
+			<version>${mapstruct.version}</version>
+		</dependency>
+
+		<!-- DEV TOOLS — auto-restart on file change (remove for production) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<scope>runtime</scope>
+			<optional>true</optional>
+		</dependency>
+
+		<!-- TEST -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- ACTUATOR for Render health checks -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+
+			<!--
+			  CRITICAL: Annotation processor ORDER matters.
+			  Lombok MUST run BEFORE MapStruct.
+			  Why? MapStruct reads the getters/setters that Lombok generates.
+			  If MapStruct runs first, it sees a class with no getters
+			  and generates empty/broken mapping code.
+			  This ordering bug is the #1 reason MapStruct breaks with Lombok.
+			-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<annotationProcessorPaths>
+						<!-- Lombok FIRST -->
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>${lombok.version}</version>
+						</path>
+						<!-- MapStruct SECOND (reads Lombok-generated code) -->
+						<path>
+							<groupId>org.mapstruct</groupId>
+							<artifactId>mapstruct-processor</artifactId>
+							<version>${mapstruct.version}</version>
+						</path>
+					</annotationProcessorPaths>
+					<compilerArgs>
+						<!-- Makes MapStruct use Spring's component model -->
+						<arg>-Amapstruct.defaultComponentModel=spring</arg>
+					</compilerArgs>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
